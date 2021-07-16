@@ -1,0 +1,14 @@
+{% extends "layout.html" %}
+
+{% block nav %}{% endblock %}
+{% block content %}
+  <div class="columns my-5">
+    <div class="column is-half is-offset-one-quarter">
+      <h1 class="has-text-centered is-size-3 my-6">Supabase Playground</h1>
+      {% for message in get_flashed_messages() %}
+        <div class="notification is-danger">{{ message }}</div>
+      {% endfor %}
+      {% block form %}{% endblock %}
+    </div>
+  </div>
+{% endblock %}
