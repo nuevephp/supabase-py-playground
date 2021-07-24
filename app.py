@@ -3,6 +3,7 @@ from flask import (
     Flask, render_template, request, redirect, session, url_for, flash
 )
 from supabase_py import create_client, Client
+from forms import AuthForm
 
 url: str = os.environ.get("SUPABASE_URL")
 key: str = os.environ.get("SUPABASE_KEY")
@@ -19,32 +20,38 @@ def home():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    if request.method == 'POST':
+    form = AuthForm()
+    if form.validate_on_submit():
         error = None
-        email = request.form['email']
-        password = request.form['password']
-
-        if not email:
-            error = 'Email is required.'
-        elif not password:
-            error = 'Password is required.'
+        email = form.email.data
+        password = form.password.data
         
-        if error is None:
-            app.logger.debug('debugging now...')
-            user = supabase.auth.sign_in(email=email, password=password)
-            app.logger.debug(user)
-            if (user['status_code'] == 400):
-                error = user['error_description']
-            else:
-                return redirect(url_for('home'))
+        app.logger.debug('debugging now...')
+        user = supabase.auth.sign_in(email=email, password=password)
+        app.logger.debug(user)
+        if (user['status_code'] == 400):
+            error = user['error_description']
+        else:
+            return redirect(url_for('home'))
+        
         flash(error)
     
-    return render_template("auth/login.html")
+    return render_template("auth/login.html", form=form)
 
 @app.route('/sign-up', methods=['GET', 'POST'])
 def register():
-    error=None
-    if request.method == 'POST':
-        user = supabase.auth.sign_up(email=request.form['email'], password=request.form['password'])
+    form = AuthForm()
+    if form.validate_on_submit():
+        error = None
+        email = form.email.data
+        password = form.password.data
+        
+        user = supabase.auth.sign_up(email=email, password=password)
+        if (user['status_code'] == 400):
+            error = user['error_description']
+        else:
+            return redirect(url_for('home'))
+        
+        flash(error)
     
-    return render_template("auth/sign_up.html")
+    return render_template("auth/sign_up.html", form=form)
